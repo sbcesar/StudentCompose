@@ -3,6 +3,7 @@ import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.Button
 import androidx.compose.material.OutlinedTextField
 import androidx.compose.material.Text
@@ -23,7 +24,7 @@ fun MainScreen(
     val nombreFichero = "Students.txt"
     var studentName by remember { mutableStateOf("") }
     var studentList by remember { mutableStateOf(listOf("Pepe","Pedro","Pepa","Paca")) }
-    val scrollBarVerticalState = rememberScrollState(0)
+    val scrollBarVerticalState = rememberLazyListState()
     val focusRequester = remember { FocusRequester() }
 
 
@@ -83,7 +84,8 @@ fun MainScreen(
                     LazyColumn(
                         modifier = Modifier
                             .fillMaxSize()
-                            .padding(end = 12.dp)
+                            .padding(end = 12.dp),
+                        scrollBarVerticalState
                     ) {
                         items(studentList) { nombre ->
                             Text(
@@ -98,7 +100,8 @@ fun MainScreen(
                             .align(Alignment.CenterEnd)
                             .fillMaxHeight(),
                         adapter = rememberScrollbarAdapter(
-                            scrollState = scrollBarVerticalState)
+                            scrollState = scrollBarVerticalState
+                        )
                     )
                 }
                 Button(
