@@ -24,6 +24,7 @@ fun MainScreen(
     val nombreFichero = "Students.txt"
     var studentName by remember { mutableStateOf("") }
     var studentList by remember { mutableStateOf(listOf("Pepe","Pedro","Pepa","Paca")) }
+    var studentCount = studentList.count()
     val scrollBarVerticalState = rememberLazyListState()
     val focusRequester = remember { FocusRequester() }
 
@@ -73,6 +74,9 @@ fun MainScreen(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(7.dp,Alignment.CenterVertically)
             ) {
+                Text(
+                text = "Students: $studentCount"
+            )
                 Box(
                     modifier = Modifier
                         .height(300.dp)
@@ -81,6 +85,7 @@ fun MainScreen(
                         .background(Color.White)
                         .padding(horizontal = 20.dp)
                 ) {
+
                     LazyColumn(
                         modifier = Modifier
                             .fillMaxSize()
