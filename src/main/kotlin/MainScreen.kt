@@ -4,9 +4,9 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.material.Button
-import androidx.compose.material.OutlinedTextField
-import androidx.compose.material.Text
+import androidx.compose.material.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -56,7 +56,8 @@ fun MainScreen(
                     value = studentName,
                     onValueChange =  { studentName = it },
                     label = { Text("Student Name") },
-                    modifier = Modifier.focusRequester(focusRequester)
+                    modifier = Modifier
+                        .focusRequester(focusRequester),
                 )
 
                 Button(
@@ -93,11 +94,23 @@ fun MainScreen(
                         scrollBarVerticalState
                     ) {
                         items(studentList) { nombre ->
-                            Text(
-                                text = nombre,
-                                modifier = Modifier.padding(vertical = 4.dp)
-                            )
-                            Spacer(modifier = Modifier.height(5.dp))
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    text = nombre,
+                                    modifier = Modifier
+                                        .padding(vertical = 4.dp)
+                                        .weight(1f)
+                                )
+                                IconButton(
+                                    onClick = { studentList = studentList.filter { it != nombre } }
+                                ) {
+                                    Icon(Icons.Default.Delete, contentDescription = "Eliminar")
+                                }
+                                Spacer(modifier = Modifier.height(5.dp))
+                            }
+
                         }
                     }
                     VerticalScrollbar(
