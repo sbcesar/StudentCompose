@@ -13,8 +13,31 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
+import kotlinx.coroutines.delay
+import java.io.File
 
+
+@Composable
+fun InfoMessage(message: String, onCloseInfoMessage: () -> Unit) {
+    Dialog(
+        icon = painterResource("info_icon.png"),
+        title = "Atencion",
+        resizable = false,
+        onCloseRequest = onCloseInfoMessage
+    ) {
+        Box(
+            contentAlignment = Alignment.Center,
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp)
+        ) {
+            Text(message)
+        }
+    }
+}
 
 @Composable
 @Preview
@@ -22,11 +45,16 @@ fun MainScreen(
     fichero: IGestorFichero
 ) {
     val nombreFichero = "Students.txt"
+
     var studentName by remember { mutableStateOf("") }
     var studentList by remember { mutableStateOf(listOf("Pepe","Pedro","Pepa","Paca")) }
-    var studentCount = studentList.count()
+    val studentCount = studentList.count()
+
     val scrollBarVerticalState = rememberLazyListState()
     val focusRequester = remember { FocusRequester() }
+
+    var infoMessage by remember { mutableStateOf("") }
+    var showInfoMessage by remember { mutableStateOf(false) }
 
 
     LaunchedEffect(key1 = true) {
@@ -138,9 +166,34 @@ fun MainScreen(
                 .padding(bottom = 20.dp),
             onClick = {
                 fichero.saveStudentListToFile(nombreFichero, studentList)
-            }
+                infoMessage = "Fichero Guardado"
+                showInfoMessage = true
+            },
         ) {
             Text("Save Changes")
         }
     }
+
+    // Gestión de la visibilidad del mensaje informativo
+    if (showInfoMessage) {
+        InfoMessage(
+            message = infoMessage,
+            onCloseInfoMessage = {
+                showInfoMessage = false
+                infoMessage = ""
+            }
+        )
+    }
+
+    // Automáticamente oculta el mensaje después de un retraso
+    LaunchedEffect(showInfoMessage) {
+        if (showInfoMessage) {
+            delay(2000)
+            showInfoMessage = false
+            infoMessage = ""
+        }
+    }
 }
+
+
+
