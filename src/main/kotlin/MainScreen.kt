@@ -13,36 +13,50 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.DpSize
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.*
 import kotlinx.coroutines.delay
-import java.io.File
-
+import java.awt.Toolkit
 
 @Composable
-fun InfoMessage(message: String, onCloseInfoMessage: () -> Unit) {
-    Dialog(
-        icon = painterResource("info_icon.png"),
-        title = "Atencion",
-        resizable = false,
-        onCloseRequest = onCloseInfoMessage
+fun MainWindow(
+    title: String,
+    icon: Painter,
+    windowState: WindowState,
+    resizable: Boolean,
+    onCloseMainWindow: () -> Unit
     ) {
-        Box(
-            contentAlignment = Alignment.Center,
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(16.dp)
-        ) {
-            Text(message)
+    Window(
+        onCloseRequest = onCloseMainWindow,
+        title = title,
+        icon = icon,
+        resizable = resizable,
+        state = windowState
+    ) {
+        val gestorFichero = FicheroTxt()
+        val nombreFichero = "Students.txt"
+        val studentViewModel = StudentViewModel()   //recibe gestorFichero y nombreFichero
+
+        MaterialTheme {
+            Surface(
+                color = Color.LightGray,
+                modifier = Modifier.fillMaxSize()
+            ) {
+                StudentScreen(studentViewModel)
+            }
         }
     }
 }
 
+
 @Composable
 @Preview
-fun MainScreen(
-    fichero: IGestorFichero
+fun StudentScreen(
+    viewModel: StudentViewModel
 ) {
     val nombreFichero = "Students.txt"
 
@@ -191,6 +205,45 @@ fun MainScreen(
             delay(2000)
             showInfoMessage = false
             infoMessage = ""
+        }
+    }
+}
+
+@Composable
+fun GetWindowState(
+    windowWidth: Dp,
+    windowHeight: Dp,
+): WindowState {
+    // Obtener las dimensiones de la pantalla
+    val screenSize = Toolkit.getDefaultToolkit().screenSize
+    val screenWidth = screenSize.width
+    val screenHeight = screenSize.height
+
+    // Calcular la posición para centrar la ventana
+    val positionX = (screenWidth / 2 - windowWidth.value.toInt() / 2)
+    val positionY = (screenHeight / 2 - windowHeight.value.toInt() / 2)
+
+    return rememberWindowState(
+        size = DpSize(windowWidth, windowHeight),
+        position = WindowPosition(positionX.dp, positionY.dp)
+    )
+}
+
+@Composable
+fun InfoMessage(message: String, onCloseInfoMessage: () -> Unit) {
+    Dialog(
+        icon = painterResource("info_icon.png"),
+        title = "Atencion",
+        resizable = false,
+        onCloseRequest = onCloseInfoMessage
+    ) {
+        Box(
+            contentAlignment = Alignment.Center,
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(16.dp)
+        ) {
+            Text(message)
         }
     }
 }
