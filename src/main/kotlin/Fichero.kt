@@ -2,8 +2,7 @@ import java.io.File
 
 class FicheroTxt : IGestorFichero {
 
-    override fun loadStudentListFromFile(fileName: String): List<String>? {
-        val file = File(fileName)
+    override fun loadStudentListFromFile(file: File): List<String>? {
         return if (file.exists()) {
             file.readLines()
         } else {

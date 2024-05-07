@@ -2,7 +2,6 @@ import androidx.compose.desktop.ui.tooling.preview.Preview
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
@@ -21,6 +20,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.*
 import kotlinx.coroutines.delay
 import java.awt.Toolkit
+import java.io.File
 
 @Composable
 fun MainWindow(
@@ -39,7 +39,7 @@ fun MainWindow(
     ) {
         val gestorFichero = FicheroTxt()
         val nombreFichero = "Students.txt"
-        val studentViewModel = StudentViewModel()   //recibe gestorFichero y nombreFichero
+        val studentViewModel = StudentViewModel(gestorFichero, File(nombreFichero))
 
         MaterialTheme {
             Surface(
@@ -56,25 +56,23 @@ fun MainWindow(
 @Composable
 @Preview
 fun StudentScreen(
-    viewModel: StudentViewModel
+    viewModel: IStudentViewModel
 ) {
     val nombreFichero = "Students.txt"
 
-    var studentName by remember { mutableStateOf("") }
-    var studentList by remember { mutableStateOf(listOf("Pepe","Pedro","Pepa","Paca")) }
-    val studentCount = studentList.count()
+    val studentName by viewModel.newStudent
+    val studentList = viewModel.studentList
+    val studentCount = viewModel.studentList.size
+
+    val infoMessage by viewModel.infoMessage
+    val showInfoMessage by viewModel.showInfoMessage
 
     val scrollBarVerticalState = rememberLazyListState()
     val focusRequester = remember { FocusRequester() }
 
-    var infoMessage by remember { mutableStateOf("") }
-    var showInfoMessage by remember { mutableStateOf(false) }
-
 
     LaunchedEffect(key1 = true) {
-        fichero.loadStudentListFromFile(nombreFichero)?.let {
-            studentList = it
-        }
+        viewModel.loadStudents()
         focusRequester.requestFocus()
     }
 
@@ -84,19 +82,22 @@ fun StudentScreen(
             .background(Color.LightGray)
             .padding(16.dp)
     ) {
+
         Row(
             modifier = Modifier
                 .fillMaxSize(),
             verticalAlignment = Alignment.CenterVertically
         ) {
+
             Column(
                 modifier = Modifier.weight(1f),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(7.dp,Alignment.CenterVertically)
             ) {
+
                 OutlinedTextField(
                     value = studentName,
-                    onValueChange =  { studentName = it },
+                    onValueChange =  { name -> viewModel.newStudentChange(name) },
                     label = { Text("Student Name") },
                     modifier = Modifier
                         .focusRequester(focusRequester),
@@ -104,22 +105,21 @@ fun StudentScreen(
 
                 Button(
                     onClick = {
-                        studentList = studentList + studentName
-                        studentName = ""
+                        viewModel.addStudent()
                     }
                 ) {
                     Text("Add new student")
                 }
-
             }
+
             Column(
                 modifier = Modifier.weight(1f),
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(7.dp,Alignment.CenterVertically)
             ) {
-                Text(
-                text = "Students: $studentCount"
-            )
+
+                Text("Students: $studentCount")
+
                 Box(
                     modifier = Modifier
                         .height(300.dp)
@@ -135,26 +135,30 @@ fun StudentScreen(
                             .padding(end = 12.dp),
                         scrollBarVerticalState
                     ) {
-                        items(studentList) { nombre ->
+
+                        items(studentList.size) { index ->
                             Row(
                                 verticalAlignment = Alignment.CenterVertically
                             ) {
+
                                 Text(
-                                    text = nombre,
+                                    text = studentList[index],
                                     modifier = Modifier
                                         .padding(vertical = 4.dp)
                                         .weight(1f)
                                 )
+
                                 IconButton(
-                                    onClick = { studentList = studentList.filter { it != nombre } }
+                                    onClick = { viewModel.deleteStudent(index) }
                                 ) {
                                     Icon(Icons.Default.Delete, contentDescription = "Eliminar")
                                 }
+
                                 Spacer(modifier = Modifier.height(5.dp))
                             }
-
                         }
                     }
+
                     VerticalScrollbar(
                         modifier = Modifier
                             .align(Alignment.CenterEnd)
@@ -164,9 +168,10 @@ fun StudentScreen(
                         )
                     )
                 }
+
                 Button(
                     onClick = {
-                        studentList = emptyList()
+                        viewModel.clearStudent()
                     }
                 ) {
                     Text("Clear all")
@@ -174,14 +179,15 @@ fun StudentScreen(
             }
 
         }
+
         Button(
             modifier = Modifier
                 .align(Alignment.BottomCenter)
                 .padding(bottom = 20.dp),
             onClick = {
-                fichero.saveStudentListToFile(nombreFichero, studentList)
-                infoMessage = "Fichero Guardado"
-                showInfoMessage = true
+                viewModel.saveStudents(nombreFichero,studentList)
+                viewModel.updateInfoMessage("Fichero Guardado")
+                viewModel.showInfoMessage(true)
             },
         ) {
             Text("Save Changes")
@@ -193,8 +199,8 @@ fun StudentScreen(
         InfoMessage(
             message = infoMessage,
             onCloseInfoMessage = {
-                showInfoMessage = false
-                infoMessage = ""
+                viewModel.showInfoMessage(false)
+                viewModel.updateInfoMessage("")
             }
         )
     }
@@ -203,8 +209,8 @@ fun StudentScreen(
     LaunchedEffect(showInfoMessage) {
         if (showInfoMessage) {
             delay(2000)
-            showInfoMessage = false
-            infoMessage = ""
+            viewModel.showInfoMessage(false)
+            viewModel.updateInfoMessage("")
         }
     }
 }
