@@ -1,12 +1,22 @@
+import DB.StudentViewModelDB
+import Files.FicheroTxt
+import Files.StudentViewModelFile
+import Interfaces.IStudentViewModel
 import androidx.compose.desktop.ui.tooling.preview.Preview
-import androidx.compose.foundation.*
+import androidx.compose.foundation.VerticalScrollbar
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.rememberScrollbarAdapter
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
@@ -38,15 +48,18 @@ fun MainWindow(
         state = windowState
     ) {
         val gestorFichero = FicheroTxt()
+        val studentRepository = StudentRepository()
         val nombreFichero = "Students.txt"
-        val studentViewModel = StudentViewModel(gestorFichero, File(nombreFichero))
+        val studentViewModelFile = StudentViewModelFile(gestorFichero, File(nombreFichero))
+        val studentViewModelDB = StudentViewModelDB(studentRepository)
 
         MaterialTheme {
             Surface(
                 color = Color.LightGray,
                 modifier = Modifier.fillMaxSize()
             ) {
-                StudentScreen(studentViewModel)
+                //StudentScreen(studentViewModelFile)
+                StudentScreen(studentViewModelDB)
             }
         }
     }
@@ -186,7 +199,7 @@ fun StudentScreen(
                 .padding(bottom = 20.dp),
             onClick = {
                 viewModel.saveStudents(nombreFichero,studentList)
-                viewModel.updateInfoMessage("Fichero Guardado")
+
                 viewModel.showInfoMessage(true)
             },
         ) {

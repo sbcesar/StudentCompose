@@ -1,3 +1,6 @@
+package Files
+
+import Interfaces.IGestorFichero
 import java.io.File
 
 class FicheroTxt : IGestorFichero {

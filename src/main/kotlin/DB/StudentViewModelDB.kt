@@ -1,19 +1,23 @@
-import androidx.compose.runtime.*
+package DB
+
+import Interfaces.IStudentRepository
+import Interfaces.IStudentViewModel
+import androidx.compose.runtime.State
+import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateOf
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import java.io.File
 
-class StudentViewModel(
-    private val gestorFichero: IGestorFichero,
-    private val nombreFichero: File
+class StudentViewModelDB(
+    private val studentRepository: IStudentRepository
 ): IStudentViewModel {
 
     private var _newStudent = mutableStateOf("")
     override val newStudent: State<String> = _newStudent
 
-    //Valores por defecto
+
     private var _studentList = mutableStateListOf("Pepe","Pedro","Pepa","Paca")
     override val studentList: List<String> = _studentList
 
@@ -23,7 +27,6 @@ class StudentViewModel(
     private var _showInfoMessage = mutableStateOf(false)
     override val showInfoMessage: State<Boolean> = _showInfoMessage
 
-
     override fun newStudentChange(name: String) { _newStudent.value = name }
 
     override fun addStudent() {
@@ -32,23 +35,32 @@ class StudentViewModel(
     }
 
     override fun loadStudents() {
-        val lista = gestorFichero.loadStudentListFromFile(nombreFichero)
-        if (lista != null) {
-            _studentList.clear()    //Posible error
-            lista.forEach { name -> _studentList.add(name) }
+        val result = studentRepository.getAllStudents()
+        result.onSuccess { students ->
+            _studentList.clear()
+            _studentList.addAll(students)
+            updateInfoMessage("Registros cargados correctamente.")
+        }.onFailure {
+            exception -> updateInfoMessage(exception.message ?: "")
         }
     }
 
-    override fun deleteStudent(index: Int) {
-        _studentList.removeAt(index)
-    }
-
     override fun saveStudents(nombreFichero: String, studentList: List<String>) {
-        gestorFichero.saveStudentListToFile(nombreFichero,studentList)
+        val result = studentRepository.updateStudents(_studentList)
+        result.onSuccess {
+            updateInfoMessage("Registros guardados correctamente.")
+        }.onFailure {
+            exception -> updateInfoMessage(exception.message ?: "")
+        }
+
     }
 
     override fun clearStudent() {
         _studentList.clear()
+    }
+
+    override fun deleteStudent(index: Int) {
+        _studentList.removeAt(index)
     }
 
     override fun updateInfoMessage(message: String) {
@@ -64,4 +76,6 @@ class StudentViewModel(
     override fun showInfoMessage(state: Boolean) {
         _showInfoMessage.value = state
     }
+
+
 }

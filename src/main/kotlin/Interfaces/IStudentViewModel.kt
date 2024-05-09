@@ -1,3 +1,5 @@
+package Interfaces
+
 import androidx.compose.runtime.*
 
 interface IStudentViewModel {

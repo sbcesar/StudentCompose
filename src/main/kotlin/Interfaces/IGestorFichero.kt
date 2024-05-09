@@ -1,3 +1,5 @@
+package Interfaces
+
 import java.io.File
 
 interface IGestorFichero {
