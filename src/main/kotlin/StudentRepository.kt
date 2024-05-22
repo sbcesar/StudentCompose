@@ -27,6 +27,7 @@ class StudentRepository: IStudentRepository {
         }
     }
 
+
     override fun updateStudents(students: List<String>): Result<Unit> {
         val connectionDb = Database.getConnection()
         var statement: Statement? = null
